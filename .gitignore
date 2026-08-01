@@ -1,17 +1,57 @@
+# ---------------------------------------------------------------
 # Credentials -- never commit these
+# ---------------------------------------------------------------
 config.ini
 .env
 *.env
+*.pem
+*.key
 
+# Database dumps / backups (may contain guest data)
+*.dump
+*_backup.sql
+dump.sql
+
+# ---------------------------------------------------------------
 # Python
+# ---------------------------------------------------------------
 __pycache__/
 *.py[cod]
+*$py.class
 *.egg-info/
 .venv/
 venv/
+env/
+ENV/
 
-# IDE
+# Packaged builds (PyInstaller)
+build/
+dist/
+*.spec
+
+# ---------------------------------------------------------------
+# Editors / IDEs
+# ---------------------------------------------------------------
 .idea/
+.vscode/
+*.swp
+*~
 
-# Node (stray lockfile in this repo)
+# ---------------------------------------------------------------
+# OS noise
+# ---------------------------------------------------------------
+Thumbs.db
+ehthumbs.db
+desktop.ini
+.DS_Store
+
+# ---------------------------------------------------------------
+# Logs / scratch
+# ---------------------------------------------------------------
+*.log
+*.bak
+*.tmp
+
+# Node (a stray package-lock.json once landed in this repo)
 node_modules/
+package-lock.json
