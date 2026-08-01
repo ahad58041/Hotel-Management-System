@@ -4,8 +4,12 @@ import PIL
 from PIL import Image,ImageTk
 from tkinter import messagebox
 import re
-import mysql.connector
+from db_config import get_connection
+from security import hash_password, is_hashed, verify_password
 from hotel import HotelManagementSystem
+import os
+import theme
+IMG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images")
 
 
 def main():
@@ -18,97 +22,91 @@ class login_window:
     def __init__(self, root):
         self.root = root
         self.root.title("Azure's Inn Login")
-        self.root.geometry("1550x800+0+0")
+        theme.apply_theme(self.root)
+        WIN_W,WIN_H=theme.fit_window(self.root,1150,720)
 
-        bg_image = Image.open(r"C:\Users\PMLS\Desktop\Ict lab projet\Hotel Management system\images\bkg1.jpg")
-        bg_image = bg_image.resize((1550, 800), Image.LANCZOS)  # Resize to fit the window
+        bg_image = Image.open(os.path.join(IMG_DIR, "bkg1.jpg"))
+        bg_image = bg_image.resize((WIN_W, WIN_H), Image.LANCZOS)
 
         self.bg = ImageTk.PhotoImage(bg_image)
 
         lbl_bkg = Label(self.root, image=self.bg)
         lbl_bkg.place(x=0, y=0, relwidth=1, relheight=1)
 
+        # the card is centred on the real window instead of a fixed 1550px one
+        CARD_W,CARD_H=370,470
+        card_x=(WIN_W-CARD_W)//2
+        card_y=(WIN_H-CARD_H)//2
+        PADX=35
+        INNER=CARD_W-PADX*2
 
-        frame=Frame(self.root,bg="black")
-        frame.place(x=560,y=170,width=340,height=450)
+        frame=Frame(self.root,bg=theme.INK_DEEP)
+        frame.place(x=card_x,y=card_y,width=CARD_W,height=CARD_H)
 
-        img1=Image.open(r"C:\Users\PMLS\Desktop\Ict lab projet\Hotel Management system\images\login2.png")
-        img1=img1.resize((235,100),Image.LANCZOS)
+        img1=Image.open(os.path.join(IMG_DIR, "logo.png"))
+        img1=img1.resize((200,84),Image.LANCZOS)
 
         self.photoimg1=ImageTk.PhotoImage(img1)
-        lblimg1=Label(image=self.photoimg1,bg="black",borderwidth=0)
-        lblimg1.place(x=610,y=175,width=235,height=100)
+        lblimg1=Label(frame,image=self.photoimg1,bg=theme.INK_DEEP,borderwidth=0)
+        lblimg1.place(x=(CARD_W-200)//2,y=22,width=200,height=84)
 
 
-        get_str=Label(frame,text="Get Started",font=("times new roman",20,"bold"),fg="white",bg="black")
-        get_str.place(x=97,y=99)
+        get_str=Label(frame,text="Get Started",font=theme.TITLE,fg=theme.GOLD,bg=theme.INK_DEEP)
+        get_str.place(x=0,y=118,width=CARD_W)
 
-        #lable for user name
-
-        username_label=Label(frame,text="Username",font=("times new roman",15,"bold"),fg="white",bg="black")
-        username_label.place(x=70,y=155)
-
-        self.txtuser=ttk.Entry(frame,font=("times new roman",15,"bold"))
-        self.txtuser.place(x=40,y=185,width=270)
-
-        #password
-
-        # Password entry field with placeholder logic
-        self.txtpass = ttk.Entry(
-            frame,
-            font=("Times New Roman", 12),
-        )
-        self.txtpass.place(x=40, y=250, width=270)
-
-        
-        def on_focus_in(event):
-            if self.txtpass.get() == "Enter your password":
-                self.txtpass.delete(0, "end")
-                self.txtpass.config(show="*")  # Mask the input
-
-        # Function to handle focus-out event (add placeholder)
-        def on_focus_out(event):
-            if not self.txtpass.get():  # If the entry is empty
-                self.txtpass.config(show="")  
-                self.txtpass.insert(0, "Enter your password")
-
-        self.txtpass.insert(0, "Enter your password")
-
-        # Bind events to handle focus-in and focus-out
-        self.txtpass.bind("<FocusIn>", on_focus_in)
-        self.txtpass.bind("<FocusOut>", on_focus_out)
-
-
-
-
-
-#---------------------icon images-----------------
-        img2=Image.open(r"C:\Users\PMLS\Desktop\Ict lab projet\Hotel Management system\images\user.png")
-        img2=img2.resize((25,25),Image.LANCZOS)
-
+#---------------------username-----------------
+        img2=Image.open(os.path.join(IMG_DIR, "user.png"))
+        img2=img2.resize((18,18),Image.LANCZOS)
         self.photoimg2=ImageTk.PhotoImage(img2)
-        lblimg2=Label(image=self.photoimg2,bg="black",borderwidth=0)
-        lblimg2.place(x=600,y=325,width=25,height=25)
+        Label(frame,image=self.photoimg2,bg=theme.INK_DEEP,borderwidth=0).place(x=PADX,y=163,width=18,height=18)
 
+        username_label=Label(frame,text="Username",font=theme.LABEL,fg="white",bg=theme.INK_DEEP)
+        username_label.place(x=PADX+26,y=162)
 
-        img3=Image.open(r"C:\Users\PMLS\Desktop\Ict lab projet\Hotel Management system\images\password.png")
-        img3=img3.resize((25,25),Image.LANCZOS)
+        self.txtuser=ttk.Entry(frame,font=theme.ENTRY)
+        self.txtuser.place(x=PADX,y=188,width=INNER,height=32)
 
+#---------------------password-----------------
+        img3=Image.open(os.path.join(IMG_DIR, "password.png"))
+        img3=img3.resize((18,18),Image.LANCZOS)
         self.photoimg3=ImageTk.PhotoImage(img3)
-        lblimg3=Label(image=self.photoimg3,bg="black",borderwidth=0)
-        lblimg3.place(x=600,y=394,width=25,height=25)
+        Label(frame,image=self.photoimg3,bg=theme.INK_DEEP,borderwidth=0).place(x=PADX,y=239,width=18,height=18)
+
+        password_label=Label(frame,text="Password",font=theme.LABEL,fg="white",bg=theme.INK_DEEP)
+        password_label.place(x=PADX+26,y=238)
+
+        # masked from the start -- the old placeholder text was returned by get(),
+        # so an untouched field counted as a filled-in password
+        self.txtpass = ttk.Entry(frame,font=theme.ENTRY,show="*")
+        self.txtpass.place(x=PADX,y=264,width=INNER,height=32)
+
+        self.var_showpass=IntVar()
+
+        def toggle_pass():
+            self.txtpass.config(show="" if self.var_showpass.get() else "*")
+
+        Checkbutton(frame,text="Show password",variable=self.var_showpass,command=toggle_pass,
+                    font=theme.SMALL,fg="white",bg=theme.INK_DEEP,selectcolor=theme.INK_DEEP,
+                    activebackground=theme.INK_DEEP,activeforeground="white",
+                    borderwidth=0,highlightthickness=0,cursor="hand2").place(x=PADX-2,y=302)
 
             #login btn
-        login_btn=Button(frame,text="Login",command=self.login,font=("times new roman",15,"bold"),bd=0,borderwidth=0,relief=RIDGE,fg="black",bg="#AAD1E7",activeforeground="white",activebackground="#187194")
-        login_btn.place(x=110,y=299,width=120,height=35)
+        login_btn=Button(frame,text="Login",command=self.login,font=theme.BUTTON,bd=0,
+                         relief=FLAT,fg=theme.INK_DEEP,bg=theme.GOLD,
+                         activeforeground=theme.INK_DEEP,activebackground=theme.GOLD_BRIGHT,cursor="hand2")
+        login_btn.place(x=PADX,y=338,width=INNER,height=38)
 
             #register btn
-        register_btn=Button(frame,text="Register new user",command=self.register_window,font=("times new roman",10,"bold"),borderwidth=0,relief=RIDGE,fg="white",bg="black",activeforeground="white",activebackground="black")
-        register_btn.place(x=15,y=350,width=160)
+        register_btn=Button(frame,text="Register new user",command=self.register_window,font=theme.SMALL,
+                            bd=0,relief=FLAT,fg=theme.GOLD,bg=theme.INK_DEEP,anchor="w",
+                            activeforeground=theme.GOLD_BRIGHT,activebackground=theme.INK_DEEP,cursor="hand2")
+        register_btn.place(x=PADX-2,y=392,width=160,height=24)
 
             #forget register
-        forget_btn=Button(frame,text="Forget Password!",command=self.forgot_pass_window,font=("times new roman",10,"bold"),borderwidth=0,relief=RIDGE,fg="white",bg="black",activeforeground="white",activebackground="black")
-        forget_btn.place(x=10,y=375,width=160)
+        forget_btn=Button(frame,text="Forgot password?",command=self.forgot_pass_window,font=theme.SMALL,
+                          bd=0,relief=FLAT,fg=theme.GOLD,bg=theme.INK_DEEP,anchor="w",
+                          activeforeground=theme.GOLD_BRIGHT,activebackground=theme.INK_DEEP,cursor="hand2")
+        forget_btn.place(x=PADX-2,y=420,width=160,height=24)
  
     def register_window(self):
         self.new_window=Toplevel(self.root)
@@ -119,31 +117,30 @@ class login_window:
         if self.txtuser.get()=="" or self.txtpass.get()=="":
             messagebox.showerror("Error","all fields are required",parent=self.root)
 
-        elif self.txtuser.get()=="Ahad" and self.txtpass.get()=="123":
-            messagebox.showinfo("Error","Welcome to Azzure Inn hotel Management system ",parent=self.root)
-        else:    
-            conn=mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+        else:
+            conn=get_connection()
             my_cursor = conn.cursor()
-            my_cursor.execute("SELECT * from register where email=%s and password=%s",(
-
-
-                                                                                        self.txtuser.get(),
-                                                                                        self.txtpass.get()
-                    ))
+            my_cursor.execute("SELECT password from register where email=%s",(self.txtuser.get(),))
             row=my_cursor.fetchone()
-            if row==None:
-                messagebox.showerror("Error","Invalid Username & Password",parent=self.root)
-            else:
-                open_main=messagebox.askyesno("YesNo","Access only Admin",parent=self.root)
-                if open_main > 0:
-                    self.new_window = Toplevel(self.root)  # Correctly pass the root as the parent
-                    self.app = HotelManagementSystem(self.new_window)
-                else:
-                    if not open_main:
-                        return
 
-            conn.commit()
+            if row==None or not verify_password(self.txtpass.get(),row[0]):
+                messagebox.showerror("Error","Invalid Username & Password",parent=self.root)
+                conn.close()
+                return
+
+            #upgrade any leftover plaintext password to a hash on first login
+            if not is_hashed(row[0]):
+                my_cursor.execute("update register set password=%s where email=%s",(
+                                    hash_password(self.txtpass.get()),
+                                    self.txtuser.get()
+                    ))
+                conn.commit()
             conn.close()
+
+            open_main=messagebox.askyesno("YesNo","Access only Admin",parent=self.root)
+            if open_main:
+                self.new_window = Toplevel(self.root)  # Correctly pass the root as the parent
+                self.app = HotelManagementSystem(self.new_window)
 
 
 
@@ -157,9 +154,7 @@ class login_window:
         elif self.txt_newpass.get() == "":
             messagebox.showerror("Error", "Enter the new Password",parent=self.root2)
         else:
-            conn = mysql.connector.connect(
-                host="localhost", username="root", password="root", database="bank_management"
-            )
+            conn = get_connection()
             my_cursor = conn.cursor()
             query = ("select * from register where email=%s and securityQ=%s and securityA=%s")
             value = (self.txtuser.get(), self.combo_security_Q.get(), self.txt_security_entry.get())
@@ -170,7 +165,7 @@ class login_window:
                 messagebox.showerror("Error", "Incorrect data. Please check your entries.",parent=self.root2)
             else:
                 query1 = ("update register set password=%s where email=%s")
-                value1 = (self.txt_newpass.get(), self.txtuser.get())
+                value1 = (hash_password(self.txt_newpass.get()), self.txtuser.get())
                 my_cursor.execute(query1, value1)
                 conn.commit()
                 messagebox.showinfo("Azure's Inn Hotel Management", "Your Password has been reset",parent=self.root2)
@@ -182,48 +177,59 @@ class login_window:
     def forgot_pass_window(self):
         if self.txtuser.get() =="":
             messagebox.showerror("Error","Please Enter the Email Address To Reset Password",parent=self.root)
-        else:
-            conn=mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
-            my_cursor = conn.cursor()
-            query=("select * from register where email=%s")
-            value=(self.txtuser.get(),)
-            my_cursor.execute(query,value)
-            row=my_cursor.fetchone()
-            #print(row)
+            return
+
+        conn=get_connection()
+        my_cursor = conn.cursor()
+        query=("select * from register where email=%s")
+        value=(self.txtuser.get(),)
+        my_cursor.execute(query,value)
+        row=my_cursor.fetchone()
+        conn.close()
+
+        # everything below used to run even on these two failures, which raised
+        # NameError on `row` / AttributeError on self.root2
         if row==None:
             messagebox.showerror("Error","Enter the valid user name",parent=self.root)
-        else:
-            conn.close()
-            self.root2=Toplevel(    )
-            self.root2.title("Forgot Password")
-            self.root2.geometry("342x452+561+170")
+            return
 
-            l=Label(self.root2,text="Forget Password", font=("times new roman", 18, "bold"),fg="black")
-            l.place(x=0,y=10,relwidth=1)
+        self.root2=Toplevel(self.root)
+        self.root2.title("Forgot Password")
+        theme.apply_theme(self.root2)
+        self.root2.configure(bg=theme.CARD)
+        W2,H2=theme.fit_window(self.root2,380,410)
+
+        PADX=50
+        FIELD_W=W2-PADX*2
+
+        l=Label(self.root2,text="Reset Password", font=theme.TITLE,fg=theme.INK,bg=theme.CARD)
+        l.place(x=0,y=26,relwidth=1)
 #--------------------secQ--------------------------
-        security_Q=Label(self.root2,text="Select Security Question",font=("times new roman",15,"bold"))
-        security_Q.place(x=50,y=80)
+        security_Q=Label(self.root2,text="Select Security Question",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT)
+        security_Q.place(x=PADX,y=86)
 
-        self.combo_security_Q=ttk.Combobox(self.root2,font=("arial",12,"bold"),width=27,state="readonly")
+        self.combo_security_Q=ttk.Combobox(self.root2,font=theme.BODY,state="readonly")
         self.combo_security_Q["value"]=("Select","Name of your first pet","What is your favorite food","Name of your first crush")
-        self.combo_security_Q.place(x=50,y=110,width=250)
+        self.combo_security_Q.place(x=PADX,y=112,width=FIELD_W,height=32)
         self.combo_security_Q.current(0)
 
-        security_A=Label(self.root2,text="Security Answer",font=("times new roman",15,"bold"))
-        security_A.place(x=50,y=150)
+        security_A=Label(self.root2,text="Security Answer",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT)
+        security_A.place(x=PADX,y=160)
 
-        self.txt_security_entry=ttk.Entry(self.root2,font=("times new roman",15))
-        self.txt_security_entry.place(x=50,y=180,width=250)
+        self.txt_security_entry=ttk.Entry(self.root2,font=theme.ENTRY)
+        self.txt_security_entry.place(x=PADX,y=186,width=FIELD_W,height=32)
 
 
-        new_password=Label(self.root2,text="New Password",font=("times new roman",15,"bold"))
-        new_password.place(x=50,y=220)
+        new_password=Label(self.root2,text="New Password",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT)
+        new_password.place(x=PADX,y=234)
 
-        self.txt_newpass=ttk.Entry(self.root2,font=("times new roman",15))
-        self.txt_newpass.place(x=50,y=250,width=250)
+        self.txt_newpass=ttk.Entry(self.root2,font=theme.ENTRY,show="*")
+        self.txt_newpass.place(x=PADX,y=260,width=FIELD_W,height=32)
 
-        btn=Button(self.root2,text="Reset",command=self.reset_pass,font=("times new roman",15,"bold"),fg="black",bg="white")
-        btn.place(x=100,y=290)
+        btn=Button(self.root2,text="Reset Password",command=self.reset_pass,font=theme.BUTTON,
+                   bd=0,relief=FLAT,fg=theme.GOLD,bg=theme.INK,
+                   activeforeground=theme.GOLD_BRIGHT,activebackground=theme.INK_LIGHT,cursor="hand2")
+        btn.place(x=PADX,y=318,width=FIELD_W,height=40)
 
 
            
@@ -251,7 +257,8 @@ class Register:
     def __init__(self,root):
         self.root=root
         self.root.title("Azure's Inn Register")
-        self.root.geometry("1550x800+0+0")
+        theme.apply_theme(self.root)
+        WIN_W,WIN_H=theme.fit_window(self.root,1180,700)
 
 
         #----------------data variables---------------
@@ -267,8 +274,8 @@ class Register:
 
 
 # bkg img----------------------------
-        bg_image = Image.open(r"C:\Users\PMLS\Desktop\Ict lab projet\Hotel Management system\images\sky.jpg")
-        bg_image = bg_image.resize((1550, 800), Image.LANCZOS)  # Resize to fit the window
+        bg_image = Image.open(os.path.join(IMG_DIR, "sky.jpg"))
+        bg_image = bg_image.resize((WIN_W, WIN_H), Image.LANCZOS)
 
         self.bg = ImageTk.PhotoImage(bg_image)
 
@@ -277,19 +284,24 @@ class Register:
 
 #-----------left img--------------------
 
-        bg_image1 = Image.open(r"C:\Users\PMLS\Desktop\Ict lab projet\Hotel Management system\images\bkg2.jpg")
-        bg_image1 = bg_image1.resize((470, 550), Image.LANCZOS)  # Resize to fit the window
+        bg_image1 = Image.open(os.path.join(IMG_DIR, "bkg2.jpg"))
+        # panel sizes derived from the window so nothing hangs off the edge
+        PANEL_Y=40
+        PANEL_H=WIN_H-PANEL_Y*2
+        SIDE_W=340
+        SIDE_X=(WIN_W-(SIDE_W+700))//2
+        bg_image1 = bg_image1.resize((SIDE_W, PANEL_H), Image.LANCZOS)
 
         self.bg1 = ImageTk.PhotoImage(bg_image1)
 
-        lbl_bkg = Label(self.root, image=self.bg1)
-        lbl_bkg.place(x=50, y=100, width=470, height=550)
+        lbl_bkg = Label(self.root, image=self.bg1, bd=0)
+        lbl_bkg.place(x=SIDE_X, y=PANEL_Y, width=SIDE_W, height=PANEL_H)
 #------------main frame----------------
-        frame=Frame(self.root,bg="white")
-        frame.place(x=520,y=100,width=800,height=550)
+        frame=Frame(self.root,bg=theme.CARD)
+        frame.place(x=SIDE_X+SIDE_W,y=PANEL_Y,width=700,height=PANEL_H)
 
-        register_label=Label(frame,text="REGISTER HERE",font=("times new roman",20,"bold"),fg="black")
-        register_label.place(x=20,y=20)
+        register_label=Label(frame,text="REGISTER HERE",font=theme.DISPLAY,fg=theme.INK,bg=theme.CARD)
+        register_label.place(x=50,y=30)
 #-------------lables and entry-------------------------------
 #row1
         self.var_fname = StringVar()
@@ -307,16 +319,16 @@ class Register:
         validate_cmd = root.register(validate_name)
 
         # First Name
-        fname = Label(frame, text="First Name", font=("times new roman", 15, "bold"), bg="white")
+        fname = Label(frame, text="First Name", font=theme.LABEL, bg=theme.CARD)
         fname.place(x=50, y=100)
-        fname_entry = ttk.Entry(frame, textvariable=self.var_fname, font=("times new roman", 15, "bold"), 
+        fname_entry = ttk.Entry(frame, textvariable=self.var_fname, font=theme.LABEL, 
                                 validate="key", validatecommand=(validate_cmd, "%P"))
         fname_entry.place(x=50, y=130, width=250)
 
         #last name
-        lname = Label(frame, text="Last Name", font=("times new roman", 15, "bold"), bg="white")
+        lname = Label(frame, text="Last Name", font=theme.LABEL, bg=theme.CARD)
         lname.place(x=380, y=100)
-        lname_entry = ttk.Entry(frame, textvariable=self.var_lname, font=("times new roman", 15, "bold"), 
+        lname_entry = ttk.Entry(frame, textvariable=self.var_lname, font=theme.LABEL, 
                                 validate="key", validatecommand=(validate_cmd, "%P"))
         lname_entry.place(x=380, y=130, width=250)
 
@@ -337,9 +349,9 @@ class Register:
         validate_cmd = root.register(validate_contact)
 
         # Contact Label and Entry
-        contact = Label(frame, text="Contact", font=("times new roman", 15, "bold"), bg="white")
+        contact = Label(frame, text="Contact", font=theme.LABEL, bg=theme.CARD)
         contact.place(x=50, y=170)
-        contact_entry = ttk.Entry(frame, textvariable=self.var_contact, font=("times new roman", 15, "bold"),
+        contact_entry = ttk.Entry(frame, textvariable=self.var_contact, font=theme.LABEL,
                                   validate="key", validatecommand=(validate_cmd, "%P"))
         contact_entry.place(x=50, y=200, width=250)
 
@@ -356,63 +368,61 @@ class Register:
         validate_cmd = root.register(validate_email)
 
         # Email Label and Entry
-        email = Label(frame, text="Email", font=("times new roman", 15, "bold"), bg="white")
+        email = Label(frame, text="Email", font=theme.LABEL, bg=theme.CARD)
         email.place(x=380, y=170)
 
-        email_entry = ttk.Entry(frame, textvariable=self.var_email, font=("times new roman", 15, "bold"),
+        email_entry = ttk.Entry(frame, textvariable=self.var_email, font=theme.LABEL,
                                 validate="focusout", validatecommand=(validate_cmd, "%P"))
         email_entry.place(x=380, y=200, width=250)
 #row3
 
-        security_Q=Label(frame,text="Select Security Question",font=("times new roman",15,"bold"),bg="white")
+        security_Q=Label(frame,text="Select Security Question",font=theme.LABEL,bg=theme.CARD)
         security_Q.place(x=50,y=240)
 
-        self.combo_security_Q=ttk.Combobox(frame,textvariable=self.var_securityQ,font=("arial",12,"bold"),width=27,state="readonly")
+        self.combo_security_Q=ttk.Combobox(frame,textvariable=self.var_securityQ,font=theme.LABEL,width=27,state="readonly")
         self.combo_security_Q["value"]=("Select","Name of your first pet","What is your favorite food","Name of your first crush")
         self.combo_security_Q.place(x=50,y=270,width=250)
         self.combo_security_Q.current(0)
 
-        security_A=Label(frame,text="Security Answer",font=("times new roman",15,"bold"),bg="white")
-        security_A.place(x=370,y=240)
+        security_A=Label(frame,text="Security Answer",font=theme.LABEL,bg=theme.CARD)
+        security_A.place(x=380,y=240)
 
-        self.txt_security_entry=ttk.Entry(frame,textvariable=self.var_SecurityA,font=("times new roman",15))
+        self.txt_security_entry=ttk.Entry(frame,textvariable=self.var_SecurityA,font=theme.BODY)
         self.txt_security_entry.place(x=380,y=270,width=250)
 
 #row4
 
-        paswd=Label(frame,text="Password",font=("times new roman",15,"bold"),bg="white")
+        paswd=Label(frame,text="Password",font=theme.LABEL,bg=theme.CARD)
         paswd.place(x=50,y=310)
 
-        paswd_entry=ttk.Entry(frame,textvariable=self.var_pass,font=("times new roman",15,"bold"))
+        paswd_entry=ttk.Entry(frame,textvariable=self.var_pass,font=theme.LABEL)
         paswd_entry.place(x=50,y=340,width=250)
 
-        cnfrm_paswd=Label(frame,text="Confirm Password",font=("times new roman",15,"bold"),bg="white")
-        cnfrm_paswd.place(x=370,y=310)
+        cnfrm_paswd=Label(frame,text="Confirm Password",font=theme.LABEL,bg=theme.CARD)
+        cnfrm_paswd.place(x=380,y=310)
 
-        cnfrm_paswd_entry=ttk.Entry(frame,textvariable=self.var_confpass,font=("times new roman",15,"bold"))
-        cnfrm_paswd_entry.place(x=370,y=340,width=250)
+        cnfrm_paswd_entry=ttk.Entry(frame,textvariable=self.var_confpass,font=theme.LABEL)
+        cnfrm_paswd_entry.place(x=380,y=340,width=250)
 
 #---------------------chck btn---------------------
         self.var_check=IntVar()
-        check_button=Checkbutton(frame,variable=self.var_check,text="I Agree The Terms & Conditions",font=("times new roman",12,"bold"),onvalue=1,offvalue=0)
+        check_button=Checkbutton(frame,variable=self.var_check,text="I Agree The Terms & Conditions",font=theme.LABEL,onvalue=1,offvalue=0,bg=theme.CARD,activebackground=theme.CARD)
         check_button.place(x=50,y=380)
 
 
 
 #------------------btns------------------
 
-        img3=Image.open(r"C:\Users\PMLS\Desktop\Ict lab projet\Hotel Management system\images\reg.png")
-        img3=img3.resize((200,140),Image.LANCZOS)
-        self.photoimage3=ImageTk.PhotoImage(img3)
-        b1=Button(frame,command=self.register_data,image=self.photoimage3,borderwidth=0,cursor="hand2",bg="white")
-        b1.place(x=10,y=405,width=300)
+        # plain buttons instead of two differently-styled clipart images
+        reg_btn=Button(frame,text="REGISTER NOW",command=self.register_data,font=theme.BUTTON,
+                       bd=0,relief=FLAT,fg=theme.GOLD,bg=theme.INK,
+                       activeforeground=theme.GOLD_BRIGHT,activebackground=theme.INK_LIGHT,cursor="hand2")
+        reg_btn.place(x=50,y=430,width=250,height=42)
 
-
-        img4=Image.open(r"C:\Users\PMLS\Desktop\Ict lab projet\Hotel Management system\images\logbtn.png")
-        img4=img4.resize((150,40),Image.LANCZOS)
-        self.photoimage4=ImageTk.PhotoImage(img4)
-        b1=Button(frame,image=self.photoimage4,command=self.return_login,borderwidth=0,cursor="hand2",bg="white")
-        b1.place(x=330,y=420,width=300)
+        back_btn=Button(frame,text="Back to Login",command=self.return_login,font=theme.BUTTON,
+                        bd=1,relief=SOLID,fg=theme.INK,bg=theme.CARD,
+                        activeforeground=theme.INK,activebackground=theme.PAGE,cursor="hand2")
+        back_btn.place(x=380,y=430,width=250,height=42)
 #function declaration:
 
     def register_data(self):
@@ -423,7 +433,7 @@ class Register:
         elif self.var_check.get()==0:
              messagebox.showerror("Error","Agree our Terms and Conditions",parent=self.root)
         else:
-            conn=mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+            conn=get_connection()
             my_cursor = conn.cursor()
             query=("select * from register where email=%s")
             value=(self.var_email.get(),)
@@ -440,8 +450,8 @@ class Register:
                                                         self.var_email.get(),
                                                         self.var_securityQ.get(),
                                                         self.var_SecurityA.get(),
-                                                        self.var_pass.get() 
-                ))                        
+                                                        hash_password(self.var_pass.get())
+                ))
             conn.commit()
             conn.close()
             messagebox.showinfo("Success","Register Successfully ",parent=self.root)

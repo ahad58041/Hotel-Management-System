@@ -1,0 +1,7 @@
+; Copy this file to config.ini and fill in your own MySQL credentials.
+; config.ini is listed in .gitignore and must never be committed.
+[mysql]
+host = localhost
+user = root
+password = your_mysql_password_here
+database = bank_management

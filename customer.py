@@ -3,16 +3,21 @@ from PIL import Image, ImageTk
 from tkinter import ttk
 import pycountry
 import random
-import mysql.connector
+from db_config import get_connection
 from tkinter import messagebox
 import re
+import os
+import theme
+IMG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images")
 
 class customer_win:
     def __init__(self,root):
         self.root=root
-        self.root.title("Azure's Inn Hotel Mannagement System ")
-        self.root.geometry("1295x580+180+170")
-        
+        self.root.title("Azure's Inn Hotel Management System")
+        theme.apply_theme(self.root)
+        WIN_W,WIN_H=theme.fit_window(self.root,1360,768)
+        HEAD=58
+
 
 
 # -----------------------------variables for sql ---------------------
@@ -33,75 +38,72 @@ class customer_win:
         self.var_address=StringVar()
 
  # -----------------------Title--------------------------------------
-        lbl_title=Label(self.root,text="ADD CUSTOMER DETAILS",font=("fantasy",18,"bold"),bg="black",fg="#C3B499",bd="4",relief=RIDGE )
-        lbl_title.place(x=0,y=0,width=1295,height=60 )
-
-
-#-------------------------- logo -------------------------------
-        img2=Image.open(r"C:\Users\PMLS\Desktop\Github\Hotel Management system\images\logo.png")
-        img2=img2.resize((100,60),Image.Resampling.LANCZOS)
+        img2=Image.open(os.path.join(IMG_DIR, "logo.png"))
+        img2=img2.resize((88,50),Image.Resampling.LANCZOS)
         self.photoimg2=ImageTk.PhotoImage(img2)
-
-        lblimg=Label(self.root,image=self.photoimg2,bd=0,relief=RIDGE)
-        lblimg.place(x=4,y=1,width=100,height=60)
+        theme.header(self.root,"ADD CUSTOMER DETAILS",WIN_W,self.photoimg2,HEAD)
 
 #------------------------lable frame ----------------------
-        leftframe=LabelFrame(self.root,bd=4,relief=RIDGE,text="Customer Details",padx=2,font=("fantasy",12,"bold"))
-        leftframe.place(x=5,y=58,width=505,height=590 )
+        LEFT_W=520
+        body_y=HEAD+theme.PAD
+        body_h=WIN_H-body_y-theme.PAD
+
+        leftframe=theme.panel(self.root,"Customer Details")
+        leftframe.place(x=theme.PAD,y=body_y,width=LEFT_W,height=body_h)
 
 
 #------------------------Lables and Enteries-------------------------
         #Customer Refernce
-        customer_ref=Label(leftframe,text="Customer Refrence",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        customer_ref=Label(leftframe,text="Customer Refrence",bd=4,font=theme.LABEL,padx=2,pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         customer_ref.grid(row=0,column=0,sticky=W)
 
-        entry_ref=ttk.Entry(leftframe,width=29,state="readonly",textvariable=self.var_ref,font=("arial",13,"bold"))
-        entry_ref.grid(row=0,column=1)
+        entry_ref=ttk.Entry(leftframe,width=29,state="readonly",textvariable=self.var_ref,font=theme.ENTRY)
+        entry_ref.grid(row=0, column=1, pady=2, sticky=W)
 
         #Customer Name
-        cust_name=Label(leftframe,text="Customer Name:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        cust_name=Label(leftframe,text="Customer Name:",bd=4,font=theme.LABEL,padx=2,pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         cust_name.grid(row=1,column=0,sticky=W)
 
-        txtname=ttk.Entry(leftframe,width=29,textvariable=self.var_customer_name,font=("arial",13,"bold"))
-        txtname.grid(row=1,column=1)
+        txtname=ttk.Entry(leftframe,width=29,textvariable=self.var_customer_name,font=theme.ENTRY)
+        txtname.grid(row=1, column=1, pady=2, sticky=W)
 
         #Mother Name
-        moth_name=Label(leftframe,text="Mother Name:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        moth_name=Label(leftframe,text="Mother Name:",bd=4,font=theme.LABEL,padx=2,pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         moth_name.grid(row=2,column=0,sticky=W)
 
-        txtmname=ttk.Entry(leftframe,width=29,textvariable=self.var_mother,font=("arial",13,"bold"))
-        txtmname.grid(row=2,column=1)
+        txtmname=ttk.Entry(leftframe,width=29,textvariable=self.var_mother,font=theme.ENTRY)
+        txtmname.grid(row=2, column=1, pady=2, sticky=W)
 
         #Gender- combobox
-        lable_gender=Label(leftframe,text="Gender:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lable_gender=Label(leftframe,text="Gender:",bd=4,font=theme.LABEL,padx=2,pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lable_gender.grid(row=3,column=0,sticky=W)
 
-        gender_combo=ttk.Combobox(leftframe,textvariable=self.var_gender,font=("arial",12,"bold"),width=27,state="readonly")
+        gender_combo=ttk.Combobox(leftframe,textvariable=self.var_gender,font=theme.LABEL,width=27,state="readonly")
         gender_combo["value"]=("Male","Female","Rather not say","Custom")
         gender_combo.current(0)
-        gender_combo.grid(row=3,column=1)
+        gender_combo.grid(row=3, column=1, pady=2, sticky=W)
 
         #Post code
-        lblpostcode = Label(leftframe, text="PostCode:", bd=4, font=("arial", 12, "bold"), padx=2, pady=6)
+        lblpostcode = Label(leftframe, text="PostCode:", bd=4, font=theme.LABEL, padx=2, pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblpostcode.grid(row=4, column=0, sticky=W)
 
-        txtpostcode = ttk.Entry(leftframe, textvariable=self.var_post, width=29, font=("arial", 13, "bold"))
-        txtpostcode.grid(row=4, column=1)
+        txtpostcode = ttk.Entry(leftframe, textvariable=self.var_post, width=29, font=theme.ENTRY)
+        txtpostcode.grid(row=4, column=1, pady=2, sticky=W)
 
         def validate_postcode():
             postcode = self.var_post.get()
             if not postcode.isdigit(): 
                 messagebox.showerror("Invalid Postcode", "Please enter a valid postcode containing only numbers.")
 
-        btn_validate = Button(leftframe, text="Verify", command=validate_postcode, font=("arial", 10, "bold"))
-        btn_validate.grid(row=4, column=1,sticky=E)
+        btn_validate = Button(leftframe, text="Verify", command=validate_postcode, font=theme.SMALL)
+        btn_validate.grid(row=4, column=2, sticky=W, padx=(6,0))
 
         #mobile number
-        lblmobile=Label(leftframe,text="Mobile: ",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lblmobile=Label(leftframe,text="Mobile: ",bd=4,font=theme.LABEL,padx=2,pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblmobile.grid(row=5,column=0,sticky=W)
 
-        txtmobile=ttk.Entry(leftframe,textvariable=self.var_mobile,width=29,font=("arial",13,"bold"))
-        txtmobile.grid(row=5,column=1)
+        txtmobile=ttk.Entry(leftframe,textvariable=self.var_mobile,width=29,font=theme.ENTRY)
+        txtmobile.grid(row=5, column=1, pady=2, sticky=W)
 
         def validate_mobileno():
             mobile = self.var_mobile.get()
@@ -110,16 +112,16 @@ class customer_win:
             elif len(mobile) != 11:  
                 messagebox.showerror("Invalid Mobile Number", "Please enter a mobile number with exactly 11 digits.")
 
-        btn_validate = Button(leftframe, text="Verify", command=validate_mobileno, font=("arial", 10, "bold"))
-        btn_validate.grid(row=5, column=1, sticky=E)
+        btn_validate = Button(leftframe, text="Verify", command=validate_mobileno, font=theme.SMALL)
+        btn_validate.grid(row=5, column=2, sticky=W, padx=(6,0))
 
 
         # Email Label
-        lblemail = Label(leftframe, text="Email:", bd=4, font=("arial", 12, "bold"), padx=2, pady=6)
+        lblemail = Label(leftframe, text="Email:", bd=4, font=theme.LABEL, padx=2, pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblemail.grid(row=6, column=0, sticky=W)
 
         
-        txtemail = ttk.Entry(leftframe, textvariable=self.var_email, font=("arial", 13, "bold"), width=29)
+        txtemail = ttk.Entry(leftframe, textvariable=self.var_email, font=theme.ENTRY, width=29)
         txtemail.grid(row=6, column=1,sticky=W)
 
         def validate_email():
@@ -128,104 +130,100 @@ class customer_win:
                 messagebox.showerror("Invalid Email", "Please enter a valid email address with '@gmail.com' or '@yahoo.com'.")
 
         
-        btn_validate = Button(leftframe, text="Verify", command=validate_email, font=("arial", 10, "bold"))
-        btn_validate.grid(row=6, column=1, sticky=E)
+        btn_validate = Button(leftframe, text="Verify", command=validate_email, font=theme.SMALL)
+        btn_validate.grid(row=6, column=2, sticky=W, padx=(6,0))
 
 
         #nationality
 
-        lblnationality = Label(leftframe, text="Nationality:", bd=4, font=("arial", 12, "bold"), padx=2, pady=6)
+        lblnationality = Label(leftframe, text="Nationality:", bd=4, font=theme.LABEL, padx=2, pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblnationality.grid(row=7, column=0, sticky=W)
 
         nationalities = [country.name for country in pycountry.countries]
-        nationality_combo = ttk.Combobox(leftframe, textvariable=self.var_nationality,font=("arial", 12, "bold"), width=27, state="readonly")
+        nationality_combo = ttk.Combobox(leftframe, textvariable=self.var_nationality,font=theme.LABEL, width=27, state="readonly")
         nationality_combo["value"] = nationalities
         nationality_combo.current(0)
-        nationality_combo.grid(row=7, column=1)
+        nationality_combo.grid(row=7, column=1, pady=2, sticky=W)
 
 
         #id proof
-        lblidproof=Label(leftframe,text="Id Proof Type:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lblidproof=Label(leftframe,text="Id Proof Type:",bd=4,font=theme.LABEL,padx=2,pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblidproof.grid(row=8,column=0,sticky=W)
 
-        id_proof=ttk.Combobox(leftframe,textvariable=self.var_id_proof,font=("arial",12,"bold"),width=27,state=READABLE)
+        id_proof=ttk.Combobox(leftframe,textvariable=self.var_id_proof,font=theme.LABEL,width=27,state=READABLE)
         id_proof["value"]=("CNIC or B-Form","Passport No","Driving Licence",)
         id_proof.current(0)
-        id_proof.grid(row=8,column=1)
+        id_proof.grid(row=8, column=1, pady=2, sticky=W)
 
 
         #Id number
-        lblId=Label(leftframe,text="Id Number:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lblId=Label(leftframe,text="Id Number:",bd=4,font=theme.LABEL,padx=2,pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblId.grid(row=9,column=0,sticky=W)
 
-        txtid=ttk.Entry(leftframe,textvariable=self.var_id_number,width=29,font=("arial",13,"bold"))
-        txtid.grid(row=9,column=1)
+        txtid=ttk.Entry(leftframe,textvariable=self.var_id_number,width=29,font=theme.ENTRY)
+        txtid.grid(row=9, column=1, pady=2, sticky=W)
 
         def validate_idnumber():
             postcode = self.var_post.get()
             if not postcode.isdigit(): 
                 messagebox.showerror("Invalid Postcode", "Please enter a valid id number containing only numbers.")
 
-        btn_validate = Button(leftframe, text="Verify", command=validate_idnumber, font=("arial", 10, "bold"))
-        btn_validate.grid(row=9, column=1,sticky=E)
+        btn_validate = Button(leftframe, text="Verify", command=validate_idnumber, font=theme.SMALL)
+        btn_validate.grid(row=9, column=2, sticky=W, padx=(6,0))
 
 
 
         #address
-        lbladdress=Label(leftframe,text="Address:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lbladdress=Label(leftframe,text="Address:",bd=4,font=theme.LABEL,padx=2,pady=2,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lbladdress.grid(row=10,column=0,sticky=W)
 
-        txtaddress=ttk.Entry(leftframe,textvariable=self.var_address,width=29,font=("arial",13,"bold"))
-        txtaddress.grid(row=10,column=1)
+        txtaddress=ttk.Entry(leftframe,textvariable=self.var_address,width=29,font=theme.ENTRY)
+        txtaddress.grid(row=10, column=1, pady=2, sticky=W)
 
 
 
 
 #------------------btns-----------------------------
-        btn_frame=Frame(leftframe,bd=2,relief=RIDGE)
-        btn_frame.place(x=0,y=423,width=413,height=40)
+        # gridded after the last field so it can never overlap the form
+        btn_frame=Frame(leftframe,bg=theme.CARD)
+        btn_frame.grid(row=11,column=0,columnspan=3,sticky=W,pady=(18,4))
 
-        addbtn=Button(btn_frame,text="Add",command=self.add_data,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        addbtn.grid(row=0,column=0)
-
-        addupdate=Button(btn_frame,text="Update",command=self.update,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        addupdate.grid(row=0,column=1)
-
-        adddelete=Button(btn_frame,text="Delete",command=self.mDelete,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        adddelete.grid(row=0,column=2)
-
-        addreset=Button(btn_frame,text="Reset",command=self.reset,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        addreset.grid(row=0,column=3)
+        for i,(label,cmd) in enumerate([("Add",self.add_data),("Update",self.update),
+                                        ("Delete",self.mDelete),("Reset",self.reset)]):
+            theme.primary_button(btn_frame,label,cmd,width=10).grid(row=0,column=i,padx=(0,6))
 
 
 #------------------table frame & search systrem-------------------------------
 
-        customer_table_frame=LabelFrame(self.root,bd=4,relief=RIDGE,text="View Details & Search System",padx=2,font=("fantasy",12,"bold"))
-        customer_table_frame.place(x=515,y=57,width=780,height=592 )
+        customer_table_frame=theme.panel(self.root,"View Details & Search System")
+        customer_table_frame.place(x=LEFT_W+theme.PAD*2,y=body_y,
+                                   width=WIN_W-LEFT_W-theme.PAD*3,height=body_h)
 
-        lblSearch=Label(customer_table_frame,text="Search By:",bd=4,font=("arial",12,"bold"),bg="#767374",fg="white")
-        lblSearch.grid(row=0,column=0,sticky=W,padx=2)
+        # search row packs across the top; the table then fills whatever is left
+        search_row=Frame(customer_table_frame,bg=theme.CARD)
+        search_row.pack(fill=X,pady=(4,10))
+        search_row.columnconfigure(2,weight=1)   # entry absorbs the slack so buttons always fit
+
+        lblSearch=Label(search_row,text="Search By:",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT)
+        lblSearch.grid(row=0,column=0,sticky=W,padx=(0,8))
 
         self.search_var=StringVar()
-        Search_combo=ttk.Combobox(customer_table_frame,textvariable=self.search_var,font=("arial",12,"bold"),width=24,state=READABLE)
+        Search_combo=ttk.Combobox(search_row,textvariable=self.search_var,font=theme.BODY,width=12,state="readonly")
         Search_combo["value"]=("Mobile","Ref")
         Search_combo.current(0)
-        Search_combo.grid(row=0,column=1,padx=2)
+        Search_combo.grid(row=0,column=1,padx=(0,8))
 
         self.txt_search=StringVar()
-        txtsearch=ttk.Entry(customer_table_frame,textvariable=self.txt_search,width=24,font=("arial",13,"bold"))
-        txtsearch.grid(row=0,column=2,padx=2)
+        txtsearch=ttk.Entry(search_row,textvariable=self.txt_search,width=10,font=theme.ENTRY)
+        txtsearch.grid(row=0,column=2,padx=(0,8),sticky="ew")
 
-        searchbtn=Button(customer_table_frame,command=self.search,text="Search",font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        searchbtn.grid(row=0,column=3)
-
-        showallbtn=Button(customer_table_frame,text="Show All",command=self.fetch_data,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        showallbtn.grid(row=0,column=4)
+        theme.primary_button(search_row,"Search",self.search,width=10).grid(row=0,column=3,padx=(0,6))
+        theme.primary_button(search_row,"Show All",self.fetch_data,width=10).grid(row=0,column=4)
 
 
 #-------------------------Data Table--------------------------
-        detail_table=Frame(customer_table_frame,bd=2,relief=RIDGE)
-        detail_table.place(x=0,y=50,width=771,height=350)
+        detail_table=Frame(customer_table_frame,bd=1,relief=SOLID)
+        detail_table.pack(fill=BOTH,expand=1,pady=(0,4))
 
         scroll_x=ttk.Scrollbar(detail_table,orient=HORIZONTAL)
         scroll_y=ttk.Scrollbar(detail_table,orient=VERTICAL)
@@ -255,17 +253,12 @@ class customer_win:
 
 
         self.customer_detail_table["show"]="headings"
-        self.customer_detail_table.column("ref",width=100)
-        self.customer_detail_table.column("name",width=100)
-        self.customer_detail_table.column("mother",width=100)
-        self.customer_detail_table.column("gender",width=100)
-        self.customer_detail_table.column("post",width=100)
-        self.customer_detail_table.column("mobile",width=100)
-        self.customer_detail_table.column("email",width=100)
-        self.customer_detail_table.column("nationality",width=100)
-        self.customer_detail_table.column("idproof",width=100)
-        self.customer_detail_table.column("id number",width=100)
-        self.customer_detail_table.column("address",width=100)
+        # widths sized to the content rather than a uniform 100px
+        for col,wdt,anc in (("ref",70,"center"),("name",120,"w"),("mother",120,"w"),
+                            ("gender",90,"center"),("post",80,"center"),("mobile",110,"center"),
+                            ("email",180,"w"),("nationality",120,"w"),("idproof",130,"w"),
+                            ("id number",110,"center"),("address",180,"w")):
+            self.customer_detail_table.column(col,width=wdt,anchor=anc,stretch=False)
 
 
         self.customer_detail_table.pack(fill=BOTH,expand=1)
@@ -277,12 +270,7 @@ class customer_win:
             messagebox.showerror("Error", "ankheye kharab hain kya <<< sari fields fill kro 😒",parent=self.root)
         else:
             try:
-                conn = mysql.connector.connect(
-                    host="localhost",
-                    username="root",
-                    password="root",
-                    database="bank_management"
-                )
+                conn = get_connection()
                 my_cursor = conn.cursor()
                 my_cursor.execute(
                     "insert into customer values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)",
@@ -310,7 +298,7 @@ class customer_win:
                 messagebox.showwarning("Warning", f"Something went wrong: {str(e)}",parent=self.root)
 
     def fetch_data(self):
-        conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+        conn = get_connection()
         my_cursor = conn.cursor()
         my_cursor.execute("select * from customer")
         rows=my_cursor.fetchall()
@@ -344,7 +332,7 @@ class customer_win:
         if self.var_mobile.get()=="":
             messagebox.showerror("Error","Enter Your mobile number",parent=self.root)
         else:
-            conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+            conn = get_connection()
             my_cursor = conn.cursor()
             my_cursor.execute("update customer set Name=%s,Mother=%s,Gender=%s,PostCode=%s,Mobile=%s,Email=%s,Nationality=%s,Idproof=%s,Idnumber=%s,Address=%s where Ref=%s",(
                         self.var_customer_name.get(),
@@ -369,7 +357,7 @@ class customer_win:
     def mDelete(self):
         mDelete=messagebox.askyesno("Azure's Inn Hotel Mannagement System","Do you want to delete this customer!!!",parent=self.root)
         if mDelete>0:
-            conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+            conn = get_connection()
             my_cursor = conn.cursor()
             query="delete from customer where Ref=%s"
             value=(self.var_ref.get(),)
@@ -403,7 +391,7 @@ class customer_win:
 
 
     def search(self):
-            conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+            conn = get_connection()
             my_cursor = conn.cursor() 
             query = f"SELECT * FROM customer WHERE {self.search_var.get()} LIKE %s"
             my_cursor.execute(query, (f"%{self.txt_search.get()}%",))

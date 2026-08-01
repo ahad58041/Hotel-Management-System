@@ -5,15 +5,20 @@ import pycountry
 import random
 from time import strftime
 from datetime import datetime
-import mysql.connector
+from db_config import get_connection
 from tkinter import messagebox
 from tkcalendar import Calendar
+import os
+import theme
+IMG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "images")
 
 class room_booking:
     def __init__(self,root):
         self.root=root
-        self.root.title("Azure's Inn Hotel Mannagement System ")
-        self.root.geometry("1295x580+180+170")
+        self.root.title("Azure's Inn Hotel Management System")
+        theme.apply_theme(self.root)
+        WIN_W,WIN_H=theme.fit_window(self.root,1360,768)
+        HEAD=58
 
 #---------------------variables-----------------
 
@@ -29,41 +34,40 @@ class room_booking:
         self.var_total=StringVar()
 
 # -----------------------Title--------------------------------------
-        lbl_title=Label(self.root,text=" ROOMBOOKING DETAILS",font=("fantasy",18,"bold"),bg="black",fg="#C3B499",bd="4",relief=RIDGE )
-        lbl_title.place(x=0,y=0,width=1295,height=60 )
-
-
-#-------------------------- logo -------------------------------
-        img2=Image.open(r"C:\Users\PMLS\Desktop\Github\Hotel Management system\images\logo.png")
-        img2=img2.resize((100,60),Image.Resampling.LANCZOS)
+        img2=Image.open(os.path.join(IMG_DIR, "logo.png"))
+        img2=img2.resize((88,50),Image.Resampling.LANCZOS)
         self.photoimg2=ImageTk.PhotoImage(img2)
-
-        lblimg=Label(self.root,image=self.photoimg2,bd=0,relief=RIDGE)
-        lblimg.place(x=4,y=1,width=100,height=60)
+        theme.header(self.root,"ROOM BOOKING DETAILS",WIN_W,self.photoimg2,HEAD)
 
 
 #------------------------lable frame ----------------------
-        leftframe=LabelFrame(self.root,bd=4,relief=RIDGE,text="ROOM BOOKING",padx=2,font=("fantasy",12,"bold"))
-        leftframe.place(x=5,y=62,width=505,height=500 )
+        LEFT_W=520
+        body_y=HEAD+theme.PAD
+        body_h=WIN_H-body_y-theme.PAD
+        RIGHT_X=LEFT_W+theme.PAD*2
+        RIGHT_W=WIN_W-LEFT_W-theme.PAD*3
+
+        leftframe=theme.panel(self.root,"Room Booking")
+        leftframe.place(x=theme.PAD,y=body_y,width=LEFT_W,height=body_h)
 
 
 #------------------------Lables and Enteries-------------------------
         #Customer Contact
-        customer_contact=Label(leftframe,text="Customer Contact",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        customer_contact=Label(leftframe,text="Customer Contact",bd=4,font=theme.LABEL,padx=2,pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         customer_contact.grid(row=0,column=0,sticky=W)
 
-        entry_contact=ttk.Entry(leftframe,textvariable=self.var_contact,width=20,font=("arial",13,"bold"))
+        entry_contact=ttk.Entry(leftframe,textvariable=self.var_contact,width=20,font=theme.ENTRY)
         entry_contact.grid(row=0,column=1,sticky=W)
 
 
         #fetch data btn
 
-        fetchbtn=Button(leftframe,command=self.fetch_contact,text="Fetch Data",font=("arial",10,"bold"),bg="black",fg="#FFFFFF",width=8,padx=1,pady=3)
-        fetchbtn.place(x=350,y=4)
+        fetchbtn=theme.primary_button(leftframe,"Fetch Data",self.fetch_contact,width=10)
+        fetchbtn.grid(row=0,column=2,sticky=W,padx=(6,0))
 #-------------------check in ------------------------
 
         # Check-in Date Label
-        checkin_date = Label(leftframe, text="Check in date:", bd=4, font=("arial", 12, "bold"), padx=2, pady=6)
+        checkin_date = Label(leftframe, text="Check in date:", bd=4, font=theme.LABEL, padx=2, pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         checkin_date.grid(row=1, column=0, sticky=W)
 
         # Function to show the calendar popup
@@ -88,12 +92,12 @@ class room_booking:
             btn_select.pack(pady=10)
 
         # Check-in Entry with lock
-        txt_checkin = ttk.Entry(leftframe, textvariable=self.var_checkin, width=29, font=("arial", 13, "bold"), state="readonly")
-        txt_checkin.grid(row=1, column=1)
+        txt_checkin = ttk.Entry(leftframe, textvariable=self.var_checkin, width=29, font=theme.ENTRY, state="readonly")
+        txt_checkin.grid(row=1, column=1, pady=4, sticky=W)
 
         # Add a button to open the calendar
-        btn_calendar = Button(leftframe, text="Select Date", command=open_calendar, font=("arial", 10, "bold"))
-        btn_calendar.grid(row=1, column=1,sticky=E)
+        btn_calendar = Button(leftframe, text="Select Date", command=open_calendar, font=theme.SMALL)
+        btn_calendar.grid(row=1, column=2, sticky=W, padx=(6,0))
 
 
  
@@ -101,7 +105,7 @@ class room_booking:
     
 
         # Check-out Date Label
-        Check_out = Label(leftframe, text="Check out date:", bd=4, font=("arial", 12, "bold"), padx=2, pady=6)
+        Check_out = Label(leftframe, text="Check out date:", bd=4, font=theme.LABEL, padx=2, pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         Check_out.grid(row=2, column=0, sticky=W)
 
         def open_checkout_calendar():
@@ -125,11 +129,11 @@ class room_booking:
             btn_select.pack(pady=10)
 
         # Check-out Entry with lock
-        txt_checkout = ttk.Entry(leftframe, textvariable=self.var_checkout, width=29, font=("arial", 13, "bold"), state="readonly")
-        txt_checkout.grid(row=2, column=1)
+        txt_checkout = ttk.Entry(leftframe, textvariable=self.var_checkout, width=29, font=theme.ENTRY, state="readonly")
+        txt_checkout.grid(row=2, column=1, pady=4, sticky=W)
 
-        btn_checkout_calendar = Button(leftframe, text="Select Date", command=open_checkout_calendar, font=("arial", 10, "bold"))
-        btn_checkout_calendar.grid(row=2, column=1,sticky=E)
+        btn_checkout_calendar = Button(leftframe, text="Select Date", command=open_checkout_calendar, font=theme.SMALL)
+        btn_checkout_calendar.grid(row=2, column=2, sticky=W, padx=(6,0))
 
 
 
@@ -150,136 +154,142 @@ class room_booking:
 
 
         #Room type
-        lable_roomtype=Label(leftframe,text="Room Type:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lable_roomtype=Label(leftframe,text="Room Type:",bd=4,font=theme.LABEL,padx=2,pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lable_roomtype.grid(row=3,column=0,sticky=W)
 
             #connect with sql
-        conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+        conn = get_connection()
         my_cursor = conn.cursor()
         my_cursor.execute("select RoomType from details")
         avail_rooms_type=my_cursor.fetchall()
 
 
-        roomtype_combo=ttk.Combobox(leftframe,textvariable=self.var_roomavailable,font=("arial",12,"bold"),width=27)
+        roomtype_combo=ttk.Combobox(leftframe,textvariable=self.var_roomavailable,font=theme.LABEL,width=27)
         roomtype_combo["value"]=avail_rooms_type
         roomtype_combo.current(0)
-        roomtype_combo.grid(row=3,column=1)
+        roomtype_combo.grid(row=3, column=1, pady=4, sticky=W)
 
         #Available room
-        lblRoomAvailability=Label(leftframe,text="Available Rooms:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lblRoomAvailability=Label(leftframe,text="Available Rooms:",bd=4,font=theme.LABEL,padx=2,pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblRoomAvailability.grid(row=4,column=0,sticky=W)
             #connect with sql 
-        conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+        conn = get_connection()
         my_cursor = conn.cursor()
         my_cursor.execute("select RoomNo from details")
         avail_rooms_data=my_cursor.fetchall()
 
 
-        room_no_combo=ttk.Combobox(leftframe,textvariable=self.var_roomtype,font=("arial",12,"bold"),width=27)
+        room_no_combo=ttk.Combobox(leftframe,textvariable=self.var_roomtype,font=theme.LABEL,width=27)
         room_no_combo["value"]=avail_rooms_data
         room_no_combo.current(0)
-        room_no_combo.grid(row=4,column=1)
+        room_no_combo.grid(row=4, column=1, pady=4, sticky=W)
 
         #meal
-        lblmeal=Label(leftframe,text="Meal: ",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lblmeal=Label(leftframe,text="Meal: ",bd=4,font=theme.LABEL,padx=2,pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblmeal.grid(row=5,column=0,sticky=W)
 
-        txtmeal=ttk.Entry(leftframe,textvariable=self.var_meal,width=29,font=("arial",13,"bold"))
-        txtmeal.grid(row=5,column=1)
+        txtmeal=ttk.Entry(leftframe,textvariable=self.var_meal,width=29,font=theme.ENTRY)
+        txtmeal.grid(row=5, column=1, pady=4, sticky=W)
 
         # No of Dys
-        lblNoOfDays=Label(leftframe,text="No of Days:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lblNoOfDays=Label(leftframe,text="No of Days:",bd=4,font=theme.LABEL,padx=2,pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblNoOfDays.grid(row=6,column=0,sticky=W)
 
-        txtNoOfDays=ttk.Entry(leftframe,textvariable=self.var_noofdays,font=("arial",13,"bold"),width=29)
-        txtNoOfDays.grid(row=6,column=1)
+        txtNoOfDays=ttk.Entry(leftframe,textvariable=self.var_noofdays,font=theme.ENTRY,width=29)
+        txtNoOfDays.grid(row=6, column=1, pady=4, sticky=W)
 
         #Paid tax
 
-        lblNoOfDays=Label(leftframe,text="Paid Tax:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lblNoOfDays=Label(leftframe,text="Paid Tax:",bd=4,font=theme.LABEL,padx=2,pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblNoOfDays.grid(row=7,column=0,sticky=W)
 
-        txtNoOfDays=ttk.Entry(leftframe,textvariable=self.var_paidtax,font=("arial",13,"bold"),width=29)
-        txtNoOfDays.grid(row=7,column=1)
+        txtNoOfDays=ttk.Entry(leftframe,textvariable=self.var_paidtax,font=theme.ENTRY,width=29)
+        txtNoOfDays.grid(row=7, column=1, pady=4, sticky=W)
 
 
         # Sub Total
 
-        lblNoOfDays=Label(leftframe,text="Sub Total:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lblNoOfDays=Label(leftframe,text="Sub Total:",bd=4,font=theme.LABEL,padx=2,pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblNoOfDays.grid(row=8,column=0,sticky=W)
 
-        txtNoOfDays=ttk.Entry(leftframe,textvariable=self.var_actualtotal,font=("arial",13,"bold"),width=29)
-        txtNoOfDays.grid(row=8,column=1)
+        txtNoOfDays=ttk.Entry(leftframe,textvariable=self.var_actualtotal,font=theme.ENTRY,width=29)
+        txtNoOfDays.grid(row=8, column=1, pady=4, sticky=W)
 
 
         # Total Cost
         
-        lblNoOfDays=Label(leftframe,text="Total Cost:",bd=4,font=("arial",12,"bold"),padx=2,pady=6)
+        lblNoOfDays=Label(leftframe,text="Total Cost:",bd=4,font=theme.LABEL,padx=2,pady=6,bg=theme.CARD,fg=theme.TEXT,anchor="w")
         lblNoOfDays.grid(row=9,column=0,sticky=W)
 
-        txtNoOfDays=ttk.Entry(leftframe,textvariable=self.var_total,font=("arial",13,"bold"),width=29)
-        txtNoOfDays.grid(row=9,column=1)
+        txtNoOfDays=ttk.Entry(leftframe,textvariable=self.var_total,font=theme.ENTRY,width=29)
+        txtNoOfDays.grid(row=9, column=1, pady=4, sticky=W)
 
         # Bill btn
-        billbtn=Button(leftframe,text="Billing",command=self.total,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        billbtn.grid(row=10,column=0,padx=1,sticky=W)
+        billbtn=theme.primary_button(leftframe,"Billing",self.total,width=10)
+        billbtn.grid(row=10,column=1,sticky=W,pady=(8,0))
 
 
 
 #------------------btns-----------------------------
-        btn_frame=Frame(leftframe,bd=2,relief=RIDGE)
-        btn_frame.place(x=0,y=430,width=413,height=40)
+        # gridded after the last field so it can never overlap the form
+        btn_frame=Frame(leftframe,bg=theme.CARD)
+        btn_frame.grid(row=11,column=0,columnspan=3,sticky=W,pady=(16,4))
 
-        addbtn=Button(btn_frame,text="Add",command=self.add_data,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        addbtn.grid(row=0,column=0)
-
-        addupdate=Button(btn_frame,text="Update",command=self.update,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        addupdate.grid(row=0,column=1)
-
-        adddelete=Button(btn_frame,text="Delete",command=self.fDelete,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        adddelete.grid(row=0,column=2)
-
-        addreset=Button(btn_frame,text="Reset",command=self.reset,font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        addreset.grid(row=0,column=3)
+        for i,(label,cmd) in enumerate([("Add",self.add_data),("Update",self.update),
+                                        ("Delete",self.fDelete),("Reset",self.reset)]):
+            theme.primary_button(btn_frame,label,cmd,width=10).grid(row=0,column=i,padx=(0,6))
 
 
 #------------------Right side image-----------------------------
 
-        img3=Image.open(r"C:\Users\PMLS\Desktop\Github\Hotel Management system\images\room1.jpg")
-        img3=img3.resize((520,300),Image.Resampling.LANCZOS)
+        IMG_H=250
+        INFO_W=260
+        IMG_W=RIGHT_W-INFO_W-theme.PAD
+        # remembered so fetch_contact() can drop its info card beside the photo
+        self.info_x=RIGHT_X+IMG_W+theme.PAD
+        self.info_y=body_y
+        self.info_w=INFO_W
+        self.info_h=IMG_H
+
+        img3=Image.open(os.path.join(IMG_DIR, "room1.jpg"))
+        img3=img3.resize((IMG_W,IMG_H),Image.Resampling.LANCZOS)
         self.photoimg3=ImageTk.PhotoImage(img3)
-        lblimg=Label(self.root,image=self.photoimg3,relief=RIDGE)
-        lblimg.place(x=760,y=65,width=520,height=300)
+        lblimg=Label(self.root,image=self.photoimg3,bd=0)
+        lblimg.place(x=RIGHT_X,y=body_y,width=IMG_W,height=IMG_H)
 
 
 
 #------------------table frame & search syst em-------------------------------
 
-        customer_table_frame=LabelFrame(self.root,bd=4,relief=RIDGE,text="View Details & Search System",padx=2,font=("fantasy",12,"bold"))
-        customer_table_frame.place(x=515,y=280,width=780,height=260  )
+        # sits below the photo instead of underneath it
+        table_y=body_y+IMG_H+theme.PAD
+        customer_table_frame=theme.panel(self.root,"View Details & Search System")
+        customer_table_frame.place(x=RIGHT_X,y=table_y,width=RIGHT_W,
+                                   height=WIN_H-table_y-theme.PAD)
 
-        lblSearch=Label(customer_table_frame,text="Search By:",bd=4,font=("arial",12,"bold"),bg="#767374",fg="white")
-        lblSearch.grid(row=0,column=0,sticky=W,padx=2)
+        search_row=Frame(customer_table_frame,bg=theme.CARD)
+        search_row.pack(fill=X,pady=(4,10))
+        search_row.columnconfigure(2,weight=1)
+
+        lblSearch=Label(search_row,text="Search By:",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT)
+        lblSearch.grid(row=0,column=0,sticky=W,padx=(0,8))
 
         self.search_var=StringVar()
-        Search_combo=ttk.Combobox(customer_table_frame,textvariable=self.search_var,font=("arial",12,"bold"),width=24,state=READABLE)
+        Search_combo=ttk.Combobox(search_row,textvariable=self.search_var,font=theme.BODY,width=12,state="readonly")
         Search_combo["value"]=("Contact","Room")
         Search_combo.current(0)
-        Search_combo.grid(row=0,column=1,padx=2)
+        Search_combo.grid(row=0,column=1,padx=(0,8))
 
         self.txt_search=StringVar()
-        txtsearch=ttk.Entry(customer_table_frame,textvariable=self.txt_search,width=24,font=("arial",13,"bold"))
-        txtsearch.grid(row=0,column=2,padx=2)
+        txtsearch=ttk.Entry(search_row,textvariable=self.txt_search,width=10,font=theme.ENTRY)
+        txtsearch.grid(row=0,column=2,padx=(0,8),sticky="ew")
 
-        searchbtn=Button(customer_table_frame,command=self.search,text="Search",font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        searchbtn.grid(row=0,column=3)
-
-        showallbtn=Button(customer_table_frame,command=self.fetch_data,text="Show All",font=("arial",12,"bold"),bg="black",fg="#C3B499",width=10,padx=1,pady=3)
-        showallbtn.grid(row=0,column=4)
+        theme.primary_button(search_row,"Search",self.search,width=10).grid(row=0,column=3,padx=(0,6))
+        theme.primary_button(search_row,"Show All",self.fetch_data,width=10).grid(row=0,column=4)
 
 #-------------------------Data Table--------------------------
-        detail_table=Frame(customer_table_frame,bd=2,relief=RIDGE)
-        detail_table.place(x=0,y=50,width=771,height=180)
+        detail_table=Frame(customer_table_frame,bd=1,relief=SOLID)
+        detail_table.pack(fill=BOTH,expand=1,pady=(0,4))
 
         scroll_x=ttk.Scrollbar(detail_table,orient=HORIZONTAL)
         scroll_y=ttk.Scrollbar(detail_table,orient=VERTICAL)
@@ -305,13 +315,9 @@ class room_booking:
 
         self.room_table["show"]="headings"
 
-        self.room_table.column("contact",width=100)
-        self.room_table.column("checkin",width=100)
-        self.room_table.column("checkout",width=100)
-        self.room_table.column("roomtype",width=100)
-        self.room_table.column("roomavailability",width=100)
-        self.room_table.column("meal",width=100)
-        self.room_table.column("noOfdays",width=100)
+        for col,wdt in (("contact",120),("checkin",110),("checkout",110),
+                        ("roomtype",120),("roomavailability",130),("meal",110),("noOfdays",100)):
+            self.room_table.column(col,width=wdt,anchor="center")
         self.room_table.pack(fill=BOTH,expand=1)
         self.room_table.bind("<ButtonRelease-1>",self.get_cursor)
 
@@ -324,12 +330,7 @@ class room_booking:
             messagebox.showerror("Error", " sari fields fill kro<<<<lazy peoplee 😒",parent=self.root)
         else:
             try:
-                conn = mysql.connector.connect(
-                    host="localhost",
-                    username="root",
-                    password="root",
-                    database="bank_management"
-                )
+                conn = get_connection()
                 my_cursor = conn.cursor()
                 my_cursor.execute(
                     "insert into room values (%s, %s, %s, %s, %s, %s, %s)",
@@ -354,7 +355,7 @@ class room_booking:
                     
 # fetchinggggg-------------------------
     def fetch_data(self):
-        conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+        conn = get_connection()
         my_cursor = conn.cursor()
         my_cursor.execute("select * from room")
         rows=my_cursor.fetchall()
@@ -384,9 +385,9 @@ class room_booking:
         if self.var_contact.get()=="":
             messagebox.showerror("Error","Enter Your mobile number",parent=self.root)
         else:
-            conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+            conn = get_connection()
             my_cursor = conn.cursor()
-            my_cursor.execute("update room set check_in=%s,check_out=%s,roomtype=%s,roomavailable=%s,meal=%s,noOfdays=%s where Contact=%s",(
+            my_cursor.execute("update room set check_in=%s,check_out=%s,roomtype=%s,Room=%s,meal=%s,noOfdays=%s where Contact=%s",(
                                 self.var_checkin.get(),
                                 self.var_checkout.get(),
                                 self.var_roomtype.get(),
@@ -394,12 +395,12 @@ class room_booking:
                                 self.var_meal.get(),
                                 self.var_noofdays.get(),
                                 self.var_contact.get()
-                              
+
        ))
-        conn.commit()
-        self.fetch_data()
-        conn.close()
-        messagebox.showinfo("Update","Details has been updated",parent=self.root)
+            conn.commit()
+            self.fetch_data()
+            conn.close()
+            messagebox.showinfo("Update","Details has been updated",parent=self.root)
 
 #--------------delete function---------------------
 
@@ -407,7 +408,7 @@ class room_booking:
     def fDelete(self):
         fDelete=messagebox.askyesno("Azure's Inn Hotel Mannagement System","Do you want to delete this customer!!!",parent=self.root)
         if fDelete>0:
-            conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+            conn = get_connection()
             my_cursor = conn.cursor()
             query="delete from room where Contact=%s"
             value=(self.var_contact.get(),)
@@ -445,7 +446,7 @@ class room_booking:
 #----------------right side search system------------
 
     def search(self):
-            conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+            conn = get_connection()
             my_cursor = conn.cursor() 
             query = f"SELECT * FROM room WHERE {self.search_var.get()} LIKE %s"
             my_cursor.execute(query, (f"%{self.txt_search.get()}%",))
@@ -510,7 +511,7 @@ class room_booking:
             messagebox.showerror("Error","Please enter contact number",parent=self.root)
 
         else:
-            conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+            conn = get_connection()
             my_cursor = conn.cursor()
             query=("select Name from customer where Mobile=%s")
             value=(self.var_contact.get(),)
@@ -524,68 +525,69 @@ class room_booking:
                 conn.commit()
                 conn.close()
 
-                showdata_frame=Frame(self.root,bd=4,relief=RIDGE,padx=2)
-                showdata_frame.place(x=510,y=70,width=250,height=190)
+                showdata_frame=Frame(self.root,bd=1,relief=SOLID,padx=10,pady=8,bg=theme.CARD)
+                showdata_frame.place(x=self.info_x,y=self.info_y,
+                                     width=self.info_w,height=self.info_h)
 
-                lblname=Label(showdata_frame,text="Name:",font=("arial",12,"bold"))
+                lblname=Label(showdata_frame,text="Name:",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lblname.place(x=0,y=0)
 
-                lbl_fromsql=Label(showdata_frame,text=row,font=("arial",12,"bold"))
+                lbl_fromsql=Label(showdata_frame,text=(row[0] if row else ""),font=theme.BODY,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lbl_fromsql.place(x=90,y=0)
 
                 #gender
-                conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+                conn = get_connection()
                 my_cursor = conn.cursor()
                 query=("select Gender from customer where Mobile=%s")
                 value=(self.var_contact.get(),)
                 my_cursor.execute(query,value)
                 row=my_cursor.fetchone()
 
-                lblgender=Label(showdata_frame,text="Gender:",font=("arial",12,"bold"))
+                lblgender=Label(showdata_frame,text="Gender:",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lblgender.place(x=0,y=30)
 
-                lbl_fromsql2=Label(showdata_frame,text=row,font=("arial",12,"bold"))
+                lbl_fromsql2=Label(showdata_frame,text=(row[0] if row else ""),font=theme.BODY,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lbl_fromsql2.place(x=90,y=30)
 
 #---------------------email
-                conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+                conn = get_connection()
                 my_cursor = conn.cursor()
                 query=("select Email from customer where Mobile=%s")
                 value=(self.var_contact.get(),)
                 my_cursor.execute(query,value)
                 row=my_cursor.fetchone()
 
-                lblemail=Label(showdata_frame,text="E-mail:",font=("arial",12,"bold"))
+                lblemail=Label(showdata_frame,text="E-mail:",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lblemail.place(x=0,y=60)
 
-                lbl_fromsql3=Label(showdata_frame,text=row,font=("arial",12,"bold"))
+                lbl_fromsql3=Label(showdata_frame,text=(row[0] if row else ""),font=theme.BODY,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lbl_fromsql3.place(x=90,y=60)
 #---------------------------------nationality
-                conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+                conn = get_connection()
                 my_cursor = conn.cursor()
                 query=("select Nationality from customer where Mobile=%s")
                 value=(self.var_contact.get(),)
                 my_cursor.execute(query,value)
                 row=my_cursor.fetchone()
 
-                lbl_Nationality=Label(showdata_frame,text="Nationality:",font=("arial",12,"bold"))
+                lbl_Nationality=Label(showdata_frame,text="Nationality:",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lbl_Nationality.place(x=0,y=90)
 
-                lbl_fromsql4=Label(showdata_frame,text=row,font=("arial",12,"bold"))
+                lbl_fromsql4=Label(showdata_frame,text=(row[0] if row else ""),font=theme.BODY,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lbl_fromsql4.place(x=90,y=90)
 
 #-------------Address---------------------
-                conn = mysql.connector.connect(host="localhost",username="root",password="root",database="bank_management")
+                conn = get_connection()
                 my_cursor = conn.cursor()
                 query=("select Address from customer where Mobile=%s")
                 value=(self.var_contact.get(),)
                 my_cursor.execute(query,value)
                 row=my_cursor.fetchone()
 
-                lbl_address=Label(showdata_frame,text="Address:",font=("arial",12,"bold"))
+                lbl_address=Label(showdata_frame,text="Address:",font=theme.LABEL,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lbl_address.place(x=0,y=120)
 
-                lbl_fromsql5=Label(showdata_frame,text=row,font=("arial",12,"bold"))
+                lbl_fromsql5=Label(showdata_frame,text=(row[0] if row else ""),font=theme.BODY,bg=theme.CARD,fg=theme.TEXT,anchor="w")
                 lbl_fromsql5.place(x=90,y=120)
 
 # ***************************************************************************************************************************************************************************************************
